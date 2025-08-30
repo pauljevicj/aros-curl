@@ -133,11 +133,38 @@ int main(int argc, char **argv)
         return 1;
     }
 
+    char *host = NULL;
+    char *path = NULL;
+    int port = 80;
+
     if (parse_url(argv[1], &host, &path, &port) != 0)
     {
         fprintf(stderr, "Invalid URL (only http:// supported).\n");
         return 1;
     }
+
+    socket_t sock;
+    if (connect_tcp(host, port, &sock) != 0)
+    {
+        free(host);
+        free(path);
+        return 1;
+    }
+
+    char request[4096];
+    int n = snprintf(request, sizeof(request),
+                     "GET %s HTTP/1.1\r\n"
+                     "Host: %s\r\n"
+                     "User-Agent: mini-curl/1.0\r\n"
+                     "Connection: close\r\n"
+                     "\r\n",
+                     path, host);
+    if (n <= 0 || n >= (int)sizeof(request))
+    {
+        fprintf(stderr, "Request too long.\n");
+        CLOSESOCK(sock);
+        free(host);
+        free(path);
 
     return 0;
 }
