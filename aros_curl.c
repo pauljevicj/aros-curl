@@ -168,3 +168,33 @@ int main(int argc, char **argv)
 
     return 0;
 }
+
+    ssize_t sent = send(sock, request, (size_t)n, 0);
+    if (sent == -1)
+    {
+        perror("send");
+        CLOSESOCK(sock);
+        free(host);
+        free(path);
+        return 1;
+    }
+
+    char buf[8192];
+    for (;;)
+    {
+        ssize_t r = recv(sock, buf, sizeof(buf), 0);
+        if (r == 0)
+            break;
+        if (r < 0)
+        {
+            perror("recv");
+            break;
+        }
+        fwrite(buf, 1, (size_t)r, stdout);
+    }
+
+    CLOSESOCK(sock);
+    free(host);
+    free(path);
+    return 0;
+}
