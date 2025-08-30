@@ -73,5 +73,11 @@ int main(int argc, char **argv)
         return 1;
     }
 
+    if (parse_url(argv[1], &host, &path, &port) != 0)
+    {
+        fprintf(stderr, "Invalid URL (only http:// supported).\n");
+        return 1;
+    }
+
     return 0;
 }
