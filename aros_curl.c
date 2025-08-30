@@ -2,6 +2,17 @@
 #include <stdlib.h>
 #include <string.h>
 
+static char *str_dup(const char *s)
+{
+    if (!s)
+        return NULL;
+    size_t n = strlen(s) + 1;
+    char *p = (char *)malloc(n);
+    if (p)
+        memcpy(p, s, n);
+    return p;
+}
+
 static int parse_url(const char *url, char **host_out, char **path_out, int *port_out)
 {
     *host_out = NULL;
@@ -17,25 +28,20 @@ static int parse_url(const char *url, char **host_out, char **path_out, int *por
 
     if (strncmp(p, http, http_len) == 0)
     {
-        p += http_len; // preskoči "http://"
+        p += http_len;
     }
-    // sada p pokazuje na host[:port]/...
 
-    // Nađi početak path-a
     const char *slash = strchr(p, '/');
     const char *host_end = slash ? slash : (p + strlen(p));
 
-    // Izdvoji host[:port]
     char *hostport = (char *)malloc((size_t)(host_end - p) + 1);
     if (!hostport)
         return -1;
     memcpy(hostport, p, (size_t)(host_end - p));
     hostport[host_end - p] = '\0';
 
-    // Default path
     const char *path = slash ? slash : "/";
 
-    // Proveri port
     char *colon = strchr(hostport, ':');
     if (colon)
     {
